@@ -25,14 +25,35 @@ in the gateway repo for the full field reference).
 - **Updates** only the fields that actually differ — an org/team/user already
   at its desired state produces zero API calls. Safe to run on a schedule.
 - **Never deletes.** Removing an entry from the file does nothing to the live
-  org/team/user; remove it by hand (SPA or the admin API) once you're sure
-  nothing still needs it.
+  org/team/user — see "What sync cannot do" below.
 - Refuses (fails loudly, exit 1) to move a team or user to a different org, or
   to change a user's `type` — both are immutable identity fields the API has
   no endpoint for; delete and recreate instead.
 - Skips (with a warning, does not fail the run) any user whose live `source`
   is `sso` or `scim` — an IdP-provisioned user rejects local edits with 409
   anyway, since the next sync would overwrite them.
+
+## What sync cannot do
+
+There is no `ectl` action for these. They go through the SPA
+(`/admin/app/teams`, `/admin/app/users`) or the admin API directly, with the
+master key or a token holding `tenancy:write` / `users:write`:
+
+| Intent | Endpoint |
+| --- | --- |
+| Delete an org / team / user | `DELETE /admin/api/orgs\|teams\|users/{id}` |
+| Replace a user's whole team set | `PUT /admin/api/users/{id}/teams` |
+| Add / edit / remove one membership | `POST\|PATCH\|DELETE /admin/api/users/{user_id}/teams/{team_id}` |
+| Disable / enable a user (offboarding) | `POST /admin/users/{id}/disable\|enable` |
+
+Deletion is deliberately an explicit admin action, not something a file edit
+can trigger — a removed line in a desired-state document must never silently
+destroy an org's keys and history. Confirm with the user before proposing one,
+and prefer **disable** over delete for offboarding: it stops access while
+keeping the audit trail attributable.
+
+An org or team move that `tenancy-sync` refuses is a delete-and-recreate, which
+means new keys. Say that before proposing it.
 
 ## In Kubernetes (Helm + ArgoCD)
 

@@ -12,7 +12,7 @@ needed.
 
 | Skill | Use it for |
 | --- | --- |
-| [`einfachllm`](skills/einfachllm/) | Managing a **running** gateway: API keys, routing config, tenancy sync, health, usage |
+| [`einfachllm`](skills/einfachllm/) | Managing a **running** gateway: API keys (mint, rotate, revoke), routing config and reload, tenancy sync, operator tokens, usage and spend, the audit log |
 | [`einfachllm-ops`](skills/einfachllm-ops/) | **Deploying and operating** it: Compose/Helm installs, migrations, upgrades and rollbacks, backup/restore, hardening |
 
 ## Layout
@@ -54,6 +54,12 @@ Two actions (`config-validate`, `tenancy-sync`) import the project for schema
 validation and therefore need that checkout or the image; the rest are HTTP
 against the admin API. See
 [`skills/einfachllm/docs/setup.md`](skills/einfachllm/docs/setup.md).
+
+The management skill's action table routes all 20 `ectl` actions. Two
+read-only endpoint families — `/admin/api/stats/*` and `/admin/api/usage/*` —
+have no `ectl` wrapper and are documented as the exception; the tenancy
+deletes and user disable/enable listed under "What sync cannot do" have none
+either and go through the admin API or the SPA.
 
 ## Keeping these in sync with the gateway
 
