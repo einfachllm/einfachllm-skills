@@ -44,15 +44,25 @@ diagnosing an import error.
 | Variable | Purpose | Default |
 | --- | --- | --- |
 | `EINFACHLLM_BASE_URL` | Gateway base URL | `http://localhost:8000` |
-| `EINFACHLLM_MASTER_KEY` | Required for `mint` / `revoke` / other admin actions | — |
+| `EINFACHLLM_MASTER_KEY` | Required for `mint` / `rotate` / `revoke` / config / tenancy actions | — |
+| `EINFACHLLM_OPERATOR_TOKEN` | Scoped admin token; the `audit` commands prefer it over the master key | — |
 
-The master key is read only from the environment and is never printed. Set it in
-your shell session, not on the command line that gets logged:
+Neither credential is ever printed, and both are read only from the
+environment. Set them in your shell session, not on a command line that gets
+logged:
 
 ```bash
 export EINFACHLLM_MASTER_KEY=...      # same value the gateway runs with
 export EINFACHLLM_BASE_URL=http://localhost:8000
 ```
+
+For a recurring job that only reads the audit log, set
+`EINFACHLLM_OPERATOR_TOKEN` to a token holding `audit:read` and leave the
+master key unset entirely — `audit`, `audit-verify` and `audit-export` use it
+when it is present (docs/operator-tokens.md). Everything else is master-only,
+either because the server requires it (operator-token management) or because
+the permission it needs cannot be held by a token (`keys:write`,
+`tenancy:write`).
 
 ## Prerequisites
 

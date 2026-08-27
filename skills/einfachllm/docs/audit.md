@@ -11,6 +11,11 @@ would add it.
 
 Reads require `audit:read`. A team-scoped grant sees only that team's rows.
 
+These are the one group of `ectl` commands that accept a scoped credential:
+set `EINFACHLLM_OPERATOR_TOKEN` to a token holding `audit:read` and they use it
+instead of the master key. A compliance job should carry that, not the
+break-glass identity (docs/operator-tokens.md).
+
 ## Query
 
 ```bash
@@ -59,6 +64,12 @@ uv run python tools/ectl.py audit-export \
 Streams the log as a compliance archive — JSONL (default) with an integrity
 trailer, or CSV carrying `prev_hash` and `row_hash` per row. Without `--out` it
 goes to stdout, so it can be piped.
+
+`--out` is written atomically: the body streams into a temporary sibling and
+replaces the destination only once the copy completes, so a disconnect
+mid-export leaves the previous archive intact. That matters most for CSV, which
+has no integrity trailer — a truncated one is indistinguishable from a short
+but valid export.
 
 The export is itself audited (`audit.export`, with the range and format as the
 target). Treat the file as sensitive: it holds actor identities and usage

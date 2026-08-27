@@ -74,6 +74,23 @@ Idempotent: revoking an already-revoked token is a no-op that returns its
 current state. Both mint and revoke are recorded in the audit log
 (`operator_token.mint` / `operator_token.revoke`).
 
+## Using one with `ectl`
+
+Set `EINFACHLLM_OPERATOR_TOKEN`. The `audit`, `audit-verify` and
+`audit-export` commands prefer it over `EINFACHLLM_MASTER_KEY`, so a
+compliance job can run with the master key unset entirely:
+
+```bash
+export EINFACHLLM_OPERATOR_TOKEN=ein_op_...   # holding audit:read
+uv run python tools/ectl.py audit-verify
+```
+
+Every other command is still master-only — either the server demands it
+(operator-token management) or the permission it needs cannot sit on a token
+(`keys:write`, `tenancy:write`). The stats and usage endpoints accept a scoped
+token too, but they have no `ectl` wrapper (docs/query.md); send the token as
+the `Authorization` header there.
+
 ## When to suggest one
 
 If the user is setting up anything recurring against the admin API — a metrics
