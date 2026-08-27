@@ -86,6 +86,11 @@ uv run python tools/ectl.py mint --team platform --user alice --name smoke
 A successful `mint` (an `ein_…` key) proves the whole path: image → migrations
 → Postgres → master key → config. Treat the returned secret as a secret.
 
+**The port-forward is the smoke test, not the front door.** Exposing the
+gateway to its users needs ingress and TLS, which this skill does not yet cover
+— see "Not covered yet" in SKILL.md. Don't report a port-forwarded gateway as a
+finished deployment.
+
 ## Production: external Postgres
 
 ```bash

@@ -81,3 +81,27 @@ root.
   in the chart, or `ectl tenancy-sync` (the `einfachllm` skill).
 - **No telemetry, no external SaaS dependency.** Nothing here should introduce
   a mandatory cloud dependency or phone home.
+
+## Not covered yet
+
+The chart supports these; this skill does not document them. Read the gateway
+repo's own
+[deploy-kubernetes walkthrough](https://github.com/einfachllm/einfachllm/blob/main/docs/deploy-kubernetes.md)
+and `deploy/helm/einfachllm/values.yaml`, and say you are working from the
+chart rather than from this skill:
+
+- **Ingress and TLS** (`ingress.enabled`, `className`, `hosts`, `tls`). The
+  walkthrough here reaches the gateway with `kubectl port-forward` only — that
+  is a smoke test, not a way for users to reach it. Don't present a
+  port-forwarded gateway as a finished deployment.
+- **Sizing and probes** (`resources`, `probes`). Note the deliberate split:
+  readiness is DB-checked (`/health/ready`), liveness stays static so a
+  database blip never restart-loops the fleet.
+- **`serviceAccount`**, and teardown (`helm uninstall` — the bitnami PVC
+  persists by design and must be deleted explicitly).
+- **Chart verification** (`helm lint`, `helm template` across the value
+  combinations) when authoring chart changes.
+
+Redis (shared rate-limit state) and Vault (secret backend) have **no chart
+values at all** — they exist as Compose overlays, and in Kubernetes would need
+`extraEnv` plus a service you run yourself. Don't imply the chart wires them.
